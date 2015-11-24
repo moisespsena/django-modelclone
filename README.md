@@ -27,42 +27,42 @@ that must be unique otherwise you will get a validation error.
 
 Extends `modelclone.ClonableModelAdminMix` class.
 
-    ```python
-    from django.contrib import admin
-    from modelclone import ClonableModelAdminMix
-    from .models import MyModel, MyOtherModel
+```python
+from django.contrib import admin
+from modelclone import ClonableModelAdminMix
+from .models import MyModel, MyOtherModel
 
-    class MyCustomAdminMix(object):
-        pass
+class MyCustomAdminMix(object):
+    pass
 
-    class MyBaseAdmin(MyCustomAdminMix, ClonableModelAdminMix, admin.ModelAdmin):
-        def post_clone(self, request, original_obj, new_obj):
-            '''callback called of post clone'''
-            print("Clone of %r (#%s) is %r (#%s)" % (original_obj, original_obj.pk, new_obj, new_obj,pk)
+class MyBaseAdmin(MyCustomAdminMix, ClonableModelAdminMix, admin.ModelAdmin):
+    def post_clone(self, request, original_obj, new_obj):
+        '''callback called of post clone'''
+        print("Clone of %r (#%s) is %r (#%s)" % (original_obj, original_obj.pk, new_obj, new_obj,pk)
 
-    class MyAdmin(MyBaseAdmin):
-        list_search = ['name']
+class MyAdmin(MyBaseAdmin):
+    list_search = ['name']
 
-    admin.site.register(MyModel, MyAdmin)
+admin.site.register(MyModel, MyAdmin)
 
-    class NotCloneableAdmin(MyBaseAdmin):
-        cloneable = False
+class NotCloneableAdmin(MyBaseAdmin):
+    cloneable = False
 
-    admin.site.register(MyOtherModel, NotCloneableAdmin)
-    ```
+admin.site.register(MyOtherModel, NotCloneableAdmin)
+```
 
 In my template `templates/admin/myapp/mymodel/change_form.html`
 
-    ```html
-    {% extends "admin/change_form.html" %}
+```html
+{% extends "admin/change_form.html" %}
 
-    {% block object-tools-items %}
-        {% if include_clone_link %}
-            <li><a href="clone/">{{ clone_verbose_name }}</a></li>
-        {% endif %}
-        {{ block.super }}
-    {% endblock %} 
-    ```
+{% block object-tools-items %}
+    {% if include_clone_link %}
+        <li><a href="clone/">{{ clone_verbose_name }}</a></li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %} 
+```
 
 ## But Django already has a 'save as'
 
