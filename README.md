@@ -38,7 +38,7 @@ class MyCustomAdminMix(object):
 class MyBaseAdmin(MyCustomAdminMix, ClonableModelAdminMix, admin.ModelAdmin):
     def post_clone(self, request, original_obj, new_obj):
         '''callback called of post clone'''
-        print("Clone of %r (#%s) is %r (#%s)" % (original_obj, original_obj.pk, new_obj, new_obj,pk)
+        print("Clone of %r (#%s) is %r (#%s)" % (original_obj, original_obj.pk, new_obj, new_obj.pk))
 
 class MyAdmin(MyBaseAdmin):
     list_search = ['name']
