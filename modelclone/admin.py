@@ -19,8 +19,8 @@ __all__ = 'ClonableModelAdminMix', 'ClonableModelAdmin'
 class ClonableModelAdminMix(object):
     clone_verbose_name = lazy('Duplicate')
 
-    # set if model is cloneable
-    cloneable = True
+    # set if model is clonable
+    clonable = True
 
     def clone_link(self, clonable_model):
         '''
@@ -41,7 +41,7 @@ class ClonableModelAdminMix(object):
     def get_urls(self):
         original_urlpatterns = super(ClonableModelAdminMix, self).get_urls()
 
-        if self.cloneable:
+        if self.clonable:
             url_name = '{0}_{1}_clone'.format(
                 self.model._meta.app_label,
                 getattr(self.model._meta, 'module_name', getattr(self.model._meta, 'model_name', '')))
@@ -55,7 +55,7 @@ class ClonableModelAdminMix(object):
         return original_urlpatterns
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        if self.cloneable:
+        if self.clonable:
             extra_context = extra_context or {}
             extra_context.update({
                 'clone_verbose_name': self.clone_verbose_name,

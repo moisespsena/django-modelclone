@@ -45,10 +45,10 @@ class MyAdmin(MyBaseAdmin):
 
 admin.site.register(MyModel, MyAdmin)
 
-class NotCloneableAdmin(MyBaseAdmin):
-    cloneable = False
+class NotClonableAdmin(MyBaseAdmin):
+    clonable = False
 
-admin.site.register(MyOtherModel, NotCloneableAdmin)
+admin.site.register(MyOtherModel, NotClonableAdmin)
 ```
 
 In my template `templates/admin/myapp/mymodel/change_form.html`
