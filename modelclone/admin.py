@@ -14,12 +14,13 @@ from django.http import Http404
 from django.db.models.fields.files import FieldFile
 
 
-__all__ = 'ClonableModelAdmin',
+__all__ = 'ClonableModelAdminMix', 'ClonableModelAdmin'
 
-class ClonableModelAdmin(ModelAdmin):
-
+class ClonableModelAdminMix(object):
     clone_verbose_name = lazy('Duplicate')
-    change_form_template = 'modelclone/change_form.html'
+
+    # set if model is cloneable
+    cloneable = True
 
     def clone_link(self, clonable_model):
         '''
@@ -38,25 +39,39 @@ class ClonableModelAdmin(ModelAdmin):
     clone_link.allow_tags = True
 
     def get_urls(self):
-        url_name = '{0}_{1}_clone'.format(
-            self.model._meta.app_label,
-            getattr(self.model._meta, 'module_name', getattr(self.model._meta, 'model_name', '')))
-        new_urlpatterns = patterns('',
-            url(r'^(.+)/clone/$',
-                self.admin_site.admin_view(self.clone_view),
-                name=url_name)
-        )
-        original_urlpatterns = super(ClonableModelAdmin, self).get_urls()
+        original_urlpatterns = super(ClonableModelAdminMix, self).get_urls()
 
-        return new_urlpatterns + original_urlpatterns
+        if self.cloneable:
+            url_name = '{0}_{1}_clone'.format(
+                self.model._meta.app_label,
+                getattr(self.model._meta, 'module_name', getattr(self.model._meta, 'model_name', '')))
+            new_urlpatterns = patterns('',
+                url(r'^(.+)/clone/$',
+                    self.admin_site.admin_view(self.clone_view),
+                    name=url_name)
+            )
+
+            return new_urlpatterns + original_urlpatterns
+        return original_urlpatterns
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        extra_context.update({
-            'clone_verbose_name': self.clone_verbose_name,
-            'include_clone_link': True,
-        })
-        return super(ClonableModelAdmin, self).change_view(request, object_id, form_url, extra_context)
+        if self.cloneable:
+            extra_context = extra_context or {}
+            extra_context.update({
+                'clone_verbose_name': self.clone_verbose_name,
+                'include_clone_link': True,
+            })
+        return super(ClonableModelAdminMix, self).change_view(request, object_id, form_url, extra_context)
+
+    def post_clone(self, request, original_obj, new_obj):
+        '''
+        Called after clone success
+        :param request: The requests
+        :param original_obj: The original model instance
+        :param new_obj: The new model instance
+        :return: nothing
+        '''
+        pass
 
     def clone_view(self, request, object_id, form_url='', extra_context=None):
         opts = self.model._meta
@@ -111,6 +126,7 @@ class ClonableModelAdmin(ModelAdmin):
                 self.save_model(request, new_object, form, False)
                 self.save_related(request, form, formsets, False)
                 self.log_addition(request, new_object)
+                self.post_clone(request, original_obj, new_object)
 
                 if VERSION[1] <= 4:
                     # Until Django 1.4 giving %s in the url would be replaced with
@@ -226,6 +242,11 @@ class ClonableModelAdmin(ModelAdmin):
         This method returns the modified ``fields_list``.
         """
         return fields_list
+
+
+class ClonableModelAdmin(ClonableModelAdminMix, ModelAdmin):
+    change_form_template = 'modelclone/change_form.html'
+
 
 class InlineAdminFormSetFakeOriginal(helpers.InlineAdminFormSet):
 

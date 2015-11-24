@@ -23,6 +23,45 @@ filled with the values from the original object.
 Note that you still need to save to get a new object. And make sure to edit fields
 that must be unique otherwise you will get a validation error.
 
+## Advanced usage
+
+Extends `modelclone.ClonableModelAdminMix` class.
+
+```python
+    from django.contrib import admin
+    from modelclone import ClonableModelAdminMix
+    from .models import MyModel, MyOtherModel
+
+    class MyCustomAdminMix(object):
+        pass
+
+    class MyBaseAdmin(MyCustomAdminMix, ClonableModelAdminMix, admin.ModelAdmin):
+        pass
+
+    class MyAdmin(MyBaseAdmin):
+        list_search = ['name']
+
+    admin.site.register(MyModel, MyAdmin)
+
+    class NotCloneableAdmin(MyBaseAdmin):
+        cloneable = False
+
+    admin.site.register(MyOtherModel, NotCloneableAdmin)
+```
+
+In my template `templates/admin/myapp/mymodel/change_form.html`
+
+```html
+    {% extends "admin/change_form.html" %}
+
+    {% block object-tools-items %}
+        {% if include_clone_link %}
+            <li><a href="clone/">{{ clone_verbose_name }}</a></li>
+        {% endif %}
+        {{ block.super }}
+    {% endblock %} 
+```
+
 ## But Django already has a 'save as'
 
 Yes, I know. Django Admin has a [`save_as`](https://docs.djangoproject.com/en/dev/ref/contrib/admin/#django.contrib.admin.ModelAdmin.save_as)

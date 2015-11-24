@@ -1,2 +1,2 @@
-from .admin import ClonableModelAdmin
+from .admin import ClonableModelAdminMix, ClonableModelAdmin
 
